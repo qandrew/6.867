@@ -20,7 +20,32 @@ def gradientDescent(f, f_p, guess, step, conv):
     while abs(y_old - y_new) >= conv: #while we have not converged
         x_old = x_new
         y_old = y_new
-        x_new = x_old - step*f_p(x_old) 
+        x_new = x_old - step*f_p(x_old)
+        y_new = f(x_new)
+        i += 1
+        diff = y_old - y_new
+        print "iteration", i
+        print "x_i", x_new
+        print "y_i", y_new
+        print "diff", diff," conv", conv
+
+    return x_new, y_new, i
+
+def gradientDescentFD(f, h, guess, conv):
+    #f: function that we are given
+    #f_p: (f' prime) optional function parameter test this function for f being the quadratic bowl and the negative Gaussian function
+    #guess: initial guess
+    #step: step size
+    #conv: convergence criterion
+
+    x_new = guess
+    y_new = f(x_new)
+    y_old = y_new + 2*conv
+    i = 0 #iterator counts
+    while abs(y_old - y_new) >= conv: #while we have not converged
+        x_old = x_new
+        y_old = y_new
+        x_new = x_old - finiteDifference(f,h,x_old)
         y_new = f(x_new)
         i += 1
         diff = y_old - y_new
@@ -36,8 +61,21 @@ def finiteDifference(f,h,x):
     #f is the function
     #h is our step size, which is a scalar
     #x is where we are evaluation
-    return f(x + 0.5*h) - f(x - 0.5*h)
-
+    
+    # print "\n Print \n"
+    # print x
+    # print h
+    fD = np.zeros(x.shape)
+    for i in xrange(x.shape[0]):
+        temp = np.zeros(x.shape)
+        temp[i] = h
+        temp2 = f(x + 0.5*temp) - f(x - 0.5*temp)
+        fD[i] = temp2
+        # print "ITER", i
+        # print temp
+        # print temp2
+    return fD        
+    # return f(x + 0.5*h) - f(x - 0.5*h)
 
 def quadraticBowl(x):
     #A and b are global variables <- should change
@@ -51,12 +89,7 @@ def negGaussian(x):
 
 def negGaussianGrad(x):
     # return -1*negGaussian(x)*np.linalg.inv(cov)*(x-mu)
-    print 'neg gaus'
-    print x
-    toret = np.linalg.inv(cov)*(x-mu)*-1*negGaussian(x)
-    print negGaussian(x)
-    print ''
-    return toret
+    return np.linalg.inv(cov)*(x-mu)*-1*negGaussian(x)
 
 if __name__ == "__main__":
     print "running gradientDescent.py"
@@ -71,18 +104,29 @@ if __name__ == "__main__":
     quadBowlb = np.transpose(np.matrix(quadBowlb))
     #data =  mean, Gaussian covariance, A and b for quadratic bowl in order
 
-    guess = np.transpose(np.matrix([[13,-7.3]])) #specify guess here
+    guess = np.transpose(np.matrix([[10,0]])) #specify guess here
     step = 0.05 #specify step here
     conv = 0.0001 #specify convergence here
+    h = 1
 
     print "mean", mu
     print "gauss cov", cov
     print "Quadratic Bowl A", quadBowlA
     print "Quadratic Bowl B", quadBowlb
 
+    # x,y, i = gradientDescent(quadraticBowl, quadraticBowlGrad, guess, 0.1, 0.0001)
+    # print i
+    # x,y, i = gradientDescent(quadraticBowl, quadraticBowlGrad, guess, 0.01, 0.0001)
+    # print i
+    # x,y, i = gradientDescent(quadraticBowl, quadraticBowlGrad, guess, 0.001, 0.0001)
+    # print i
+    # x,y, i = gradientDescent(quadraticBowl, quadraticBowlGrad, guess, 0.0001, 0.0001)
+    # print i
+    
+    x,y, i = gradientDescent(quadraticBowl, quadraticBowlGrad, guess, step, conv)
+    
     print "\n\n"
-
-    x,y = gradientDescent(quadraticBowl, quadraticBowlGrad, guess, step, conv)
-    # x,y = gradientDescent(negGaussian, negGaussianGrad, guess, step, conv)
-    print 'x',x
-    print 'y',y
+    
+    x2,y2 = gradientDescentFD(quadraticBowl, step, guess, conv)
+    #x,y = gradientDescent(negGaussian, negGaussianGrad, guess, step, conv)
+    # print x2,y2
