@@ -16,11 +16,17 @@ def maxLikelihood(X,Y,M, ifPlotData=True):
     X_new = vandermonde(X,M)
     theta = np.linalg.inv(np.transpose(X_new).dot(X_new)).dot(X_new.transpose()).dot(Y) # theta = (X^T X)^-1 X^T y
 
+    X_cos = vandermonde(X,M,'cosine')
+    thetaCos = np.linalg.inv(np.transpose(X_cos).dot(X_cos)).dot(X_cos.transpose()).dot(Y)
+
     if ifPlotData:
         X_basis = np.matrix([np.linspace(0,1,100)]).transpose() #100 evenly spaced between 0,1
         X_plotting = vandermonde(X_basis, M) # np.ones((X_basis.shape[0],M))
+        X_pl_cos = vandermonde(X_basis,M,'cosine') #for 2-4 plotting
         Y_plotting = X_plotting.dot(theta)
+        Y_pl_cos = X_pl_cos.dot(thetaCos)
         plt.plot(X_basis,Y_plotting)
+        plt.plot(X_basis,Y_pl_cos)
         plt.plot(X,Y,'co')
         plt.xlabel('x')
         plt.ylabel('y')
@@ -28,11 +34,14 @@ def maxLikelihood(X,Y,M, ifPlotData=True):
 
     return theta
 
-def vandermonde(X,dim):
+def vandermonde(X,dim,function='polynomial'):
     #construct a vandermonde matrix with width dim. input vars x
     X_new = np.ones((X.shape[0],M))
     for i in xrange(1,M):
-        X_new[:,[i]] = np.matrix(np.power(X,i))
+        if function=='polynomial':
+            X_new[:,[i]] = np.matrix(np.power(X,i))
+        elif function=='cosine':
+            X_new[:,[i]] = np.matrix(np.cos(i*math.pi*X)) #as specified in prob 2-4
     return X_new
 
 def calculateResidualSquares(X,Y,theta):
@@ -53,12 +62,12 @@ def thetaLoss(X_new,Y,theta):
     #calculate the loss function at current theta
     return np.linalg.norm(X_new.dot(theta) - Y)
 
-def gradientDescent(X,Y, M,step,conv,theta =None):
+def gradientDescent(X,Y, M,step,conv,function='polynomial',theta =None):
     #running batch gradient descent on SSE Function
     if theta == None:
         #theta is our guess
         theta = np.zeros((M,1)) #start off with 0
-    X_new = vandermonde(X,M) #create vandermonde for X
+    X_new = vandermonde(X,M,function) #create vandermonde for X
     diff = thetaLoss(X_new,Y,theta) #difference between current loss and previous loss
     prev = thetaLoss(X_new,Y,theta) #value of previous loss
     i = 0
@@ -84,11 +93,11 @@ if __name__ == "__main__":
     # print X.shape
     # print Y.shape
     
-    M = 3 #choose M to your liking here.
-    step = 0.001
-    conv = 0.001
+    M = 5 #choose M to your liking here.
+    step = 0.01 #a step size too large may not work!
+    conv = 0.01
     
-    theta = maxLikelihood(X,Y,M, ifPlotData=False)
+    theta = maxLikelihood(X,Y,M, ifPlotData=True)
     print theta
 
     print "woo"
@@ -97,4 +106,4 @@ if __name__ == "__main__":
     # print residual_squares
     # print deriv
 
-    theta = gradientDescent(X,Y,M,step,conv)
+    # theta = gradientDescent(X,Y,M,step,conv, function = 'cosine')
