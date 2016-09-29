@@ -8,7 +8,49 @@ import numpy as np
 # Andrew Xia & Karan Kashyap
 # 6.867 Machine Learning HW 1
 
-def maxLikelihood(X,Y,M, ifPlotData=True):
+def plotM(X,Y):
+    q,t1 = maxLikelihood(X,Y,1,ifPlotData=False)
+    q,t2 = maxLikelihood(X,Y,2,ifPlotData=False)
+    q,t3 = maxLikelihood(X,Y,3,ifPlotData=False)
+    q,t4 = maxLikelihood(X,Y,4,ifPlotData=False)
+    q,t5 = maxLikelihood(X,Y,5,ifPlotData=False)
+    q,t8 = maxLikelihood(X,Y,8,ifPlotData=False)
+
+    X_basis = np.matrix([np.linspace(0,1,100)]).transpose() #100 evenly spaced between 0,1
+
+    X_1 = vandermonde(X_basis,1,function='cosine')
+    Y_1 = X_1.dot(t1)
+    a1 = plt.plot(X_basis,Y_1, label="M=" + str(1))
+
+    X_2 = vandermonde(X_basis,2,function='cosine')
+    Y_2 = X_2.dot(t2)
+    a2 = plt.plot(X_basis,Y_2, label="M=" + str(2))
+
+    X_3 = vandermonde(X_basis,3,function='cosine')
+    Y_3 = X_3.dot(t3)
+    a3 = plt.plot(X_basis,Y_3,label="M=" + str(3))
+
+    X_4 = vandermonde(X_basis,4,function='cosine')
+    Y_4 = X_4.dot(t4)
+    a4 = plt.plot(X_basis,Y_4,label="M=" + str(4))
+
+    X_5 = vandermonde(X_basis,5,function='cosine')
+    Y_5 = X_5.dot(t5)
+    a5 = plt.plot(X_basis,Y_5,label="M=" + str(5))
+
+    X_8 = vandermonde(X_basis,8,function='cosine')
+    Y_8 = X_8.dot(t8)
+    a8 = plt.plot(X_basis,Y_8,label="M=" + str(8))
+
+    plt.plot(X,Y,'co')
+    plt.legend([a1[0],a2[0],a3[0],a4[0],a5[0],a8[0]])
+    plt.xlabel('x')
+    plt.ylabel('y')
+    plt.show()
+
+    return t1, t2, t3, t4, t5, t8
+
+def maxLikelihood(X,Y,M,ifPlotData=True):
     #x is a 1D input vector
     #y is the output 
     #m is the max order of a simple polynomial basis
@@ -22,22 +64,23 @@ def maxLikelihood(X,Y,M, ifPlotData=True):
     if ifPlotData:
         X_basis = np.matrix([np.linspace(0,1,100)]).transpose() #100 evenly spaced between 0,1
         X_plotting = vandermonde(X_basis, M) # np.ones((X_basis.shape[0],M))
-        X_pl_cos = vandermonde(X_basis,M,'cosine') #for 2-4 plotting
         Y_plotting = X_plotting.dot(theta)
+        a, = plt.plot(X_basis,Y_plotting, label="polynomial M=" + str(M))
+        X_pl_cos = vandermonde(X_basis,M,'cosine') #for 2-4 plotting
         Y_pl_cos = X_pl_cos.dot(thetaCos)
-        plt.plot(X_basis,Y_plotting)
-        plt.plot(X_basis,Y_pl_cos)
+        b, = plt.plot(X_basis,Y_pl_cos, label="cosine M=" + str(M))
         plt.plot(X,Y,'co')
+        plt.legend([a,b])
         plt.xlabel('x')
         plt.ylabel('y')
         plt.show()
 
-    return theta
+    return theta, thetaCos
 
 def vandermonde(X,dim,function='polynomial'):
     #construct a vandermonde matrix with width dim. input vars x
-    X_new = np.ones((X.shape[0],M))
-    for i in xrange(1,M):
+    X_new = np.ones((X.shape[0],dim+1))
+    for i in xrange(1,dim+1):
         if function=='polynomial':
             X_new[:,[i]] = np.matrix(np.power(X,i))
         elif function=='cosine':
@@ -66,7 +109,7 @@ def gradientDescent(X,Y, M,step,conv,function='polynomial',theta =None):
     #running batch gradient descent on SSE Function
     if theta == None:
         #theta is our guess
-        theta = np.zeros((M,1)) #start off with 0
+        theta = np.zeros((M+1,1)) #start off with 0
     X_new = vandermonde(X,M,function) #create vandermonde for X
     diff = thetaLoss(X_new,Y,theta) #difference between current loss and previous loss
     prev = thetaLoss(X_new,Y,theta) #value of previous loss
@@ -90,20 +133,25 @@ if __name__ == "__main__":
     X = np.transpose(np.matrix(X))
     Y = np.transpose(np.matrix(Y))
     
-    # print X.shape
-    # print Y.shape
+    print X.shape
+    print Y.shape
     
-    M = 5 #choose M to your liking here.
-    step = 0.01 #a step size too large may not work!
+    M = 8 #choose M to your liking here.
+    step = 0.1 #a step size too large may not work!
     conv = 0.01
     
-    theta = maxLikelihood(X,Y,M, ifPlotData=True)
-    print theta
+    thetas = plotM(X,Y)
 
-    print "woo"
+    for t in thetas:
+        print t
+
+    # theta, thetaCos = maxLikelihood(X,Y,M, ifPlotData=True)
+    # print theta
+    # print thetaCos
 
     # residual_squares, deriv = calculateResidualSquares(X,Y,theta)
     # print residual_squares
     # print deriv
 
-    # theta = gradientDescent(X,Y,M,step,conv, function = 'cosine')
+    # theta = gradientDescent(X,Y,M,step,conv, function = 'polynomial')
+    # print theta 
