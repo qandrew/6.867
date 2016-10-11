@@ -9,46 +9,36 @@ import numpy as np
 # 6.867 Machine Learning HW 1
 
 def plotM(X,Y):
-    q,t1 = maxLikelihood(X,Y,1,ifPlotData=False)
-    q,t2 = maxLikelihood(X,Y,2,ifPlotData=False)
-    q,t3 = maxLikelihood(X,Y,3,ifPlotData=False)
-    q,t4 = maxLikelihood(X,Y,4,ifPlotData=False)
-    q,t5 = maxLikelihood(X,Y,5,ifPlotData=False)
-    q,t8 = maxLikelihood(X,Y,8,ifPlotData=False)
+    t1,q = maxLikelihood(X,Y,1,ifPlotData=False)
+    t0,q = maxLikelihood(X,Y,0,ifPlotData=False)
+    t3,q= maxLikelihood(X,Y,3,ifPlotData=False)
+    t10,q = maxLikelihood(X,Y,10,ifPlotData=False)
 
     X_basis = np.matrix([np.linspace(0,1,100)]).transpose() #100 evenly spaced between 0,1
 
-    X_1 = vandermonde(X_basis,1,function='cosine')
+    X_1 = vandermonde(X_basis,1)
     Y_1 = X_1.dot(t1)
     a1 = plt.plot(X_basis,Y_1, label="M=" + str(1))
 
-    X_2 = vandermonde(X_basis,2,function='cosine')
-    Y_2 = X_2.dot(t2)
-    a2 = plt.plot(X_basis,Y_2, label="M=" + str(2))
+    X_0 = vandermonde(X_basis,0)
+    Y_0 = X_0.dot(t0)
+    a0 = plt.plot(X_basis,Y_0, label="M=" + str(0))
 
-    X_3 = vandermonde(X_basis,3,function='cosine')
+    X_3 = vandermonde(X_basis,3)
     Y_3 = X_3.dot(t3)
     a3 = plt.plot(X_basis,Y_3,label="M=" + str(3))
 
-    X_4 = vandermonde(X_basis,4,function='cosine')
-    Y_4 = X_4.dot(t4)
-    a4 = plt.plot(X_basis,Y_4,label="M=" + str(4))
-
-    X_5 = vandermonde(X_basis,5,function='cosine')
-    Y_5 = X_5.dot(t5)
-    a5 = plt.plot(X_basis,Y_5,label="M=" + str(5))
-
-    X_8 = vandermonde(X_basis,8,function='cosine')
-    Y_8 = X_8.dot(t8)
-    a8 = plt.plot(X_basis,Y_8,label="M=" + str(8))
+    X_10 = vandermonde(X_basis,10)
+    Y_10 = X_10.dot(t10)
+    a10 = plt.plot(X_basis,Y_10,label="M=" + str(10))
 
     plt.plot(X,Y,'co')
-    plt.legend([a1[0],a2[0],a3[0],a4[0],a5[0],a8[0]])
+    plt.legend([a0[0],a1[0],a3[0],a10[0]])
     plt.xlabel('x')
     plt.ylabel('y')
     plt.show()
 
-    return t1, t2, t3, t4, t5, t8
+    return t0, t1, t3, t10
 
 def maxLikelihood(X,Y,M,ifPlotData=True):
     #x is a 1D input vector
