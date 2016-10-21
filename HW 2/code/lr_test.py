@@ -5,7 +5,7 @@ import pylab as pl
 from sklearn.linear_model import LogisticRegression
 
 # parameters
-name = '1'
+name = '3' #specify 1, 2, 3 or 4
 print '======Training======'
 # load data from csv files
 train = loadtxt('data/data'+name+'_train.csv')
@@ -17,7 +17,12 @@ print "X, Y"
 print len(Y), Y[0]
 
 # Carry out training.
-lr = LogisticRegression(penalty='l2', tol=0.0001, C=1000000.0, fit_intercept=True, intercept_scaling=1, solver='liblinear', max_iter=2000)
+lr = LogisticRegression(penalty='l2', tol=0.0001, C=1000000.0, 
+	fit_intercept=True, intercept_scaling=1, 
+	solver='liblinear', max_iter=2000)
+	#c is inverse of regularizer strength, large C means small regularizer
+	#user liblinear for solver
+	#specify in penalty to use l1 or l2
 
 # Define the predictLR(x) function, which uses trained parameters
 ### TODO ###
