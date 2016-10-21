@@ -4,7 +4,7 @@ import pylab as pl
 # import your SVM training code
 
 # parameters
-name = 'ls'
+name = '1'
 print '======Training======'
 # load data from csv files
 train = loadtxt('data/data'+name+'_train.csv')
