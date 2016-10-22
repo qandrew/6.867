@@ -25,7 +25,8 @@ lr = LogisticRegression(penalty='l2', tol=0.0001, C=1000000.0,
 	#specify in penalty to use l1 or l2
 
 # Define the predictLR(x) function, which uses trained parameters
-### TODO ###
+print lr
+
 lr.fit(X,Y)
 def predictLR(x):
     return lr.predict_proba(x)[0,1]
