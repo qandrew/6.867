@@ -10,7 +10,7 @@ Y = train[:,2:3]
 
 # Carry out training.
 epochs = 1000;
-lmbda = .02;
+l = .02; #lambda
 gamma = 2e-2;
 
 K = zeros((n,n));
