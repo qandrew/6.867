@@ -6,6 +6,7 @@ import pylab as pl
 def kernel_gaussian(a,b,gamma):
 	power = np.linalg.norm(a - b)**2
 	return e**(-gamma*power)
+	# return np.dot(a,b.T)
 
 ### TODO: Compute the kernel matrix ###
 def compute_ksums(X,gamma):
@@ -15,6 +16,7 @@ def compute_ksums(X,gamma):
 	for i in xrange(n):
 		for j in xrange(n):
 			K[i,j] = kernel_gaussian(X[i],X[j],gamma)
+			# K[i,j] = np.dot(np.array(X[i]),np.array(X[j]).T)
 		# K_sums[i] = np.sum(K[i,:])
 	return K
 
@@ -31,9 +33,9 @@ def train_gaussianSVM(X,Y,K,l,epochs):
 			# if (Y[i]* alpha[i]*K_sums[i])[0] < 1:
 			# if get_comparator(Y[i],alpha,K,i) < 1:
 			if (Y[i]*np.dot(K[i,:].reshape(1,-1),alpha)) < 1:
-				alpha[i] = (1 - step)*alpha[i] + step*Y[i]
+				alpha[i] = (1 - step*l)*alpha[i] + step*Y[i]
 			else:
-				alpha[i] = (1 - step)*alpha[i]
+				alpha[i] = (1 - step*l)*alpha[i]
 	return alpha
 
 # # Define the predict_gaussianSVM(x) function, which uses trained parameters, alpha
@@ -75,7 +77,7 @@ if __name__ == "__main__":
 
 	# # plot training results
 	print '======PLOTTING======'
-	plotDecisionBoundary(Xplot, Y, predict_gaussianSVM, [-1,0,1], title = 'Gaussian Kernel SVM')
+	plotDecisionBoundary(Xplot, Y, predict_gaussianSVM, [-1,0,1], title = 'Gaussian Kernel SVM with gamma='+str(gamma))
 	# pl.savefig('pegasos_gaussian_data'+str(name)+'_gamma'+str(gamma)+'.png')
 	pl.show()
 	print 'done'

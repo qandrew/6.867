@@ -102,7 +102,7 @@ if __name__ == "__main__":
     Y = train[:,2:3]
 
     # Carry out training.
-    L = 2e-5
+    L = 2e-2
     max_epochs = 1000
 
     global w

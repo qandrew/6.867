@@ -10,25 +10,25 @@ import svm_test
 import pegasos_linear_test as pegLin
 import pegasos_gaussian_test as pegG
 
-def load_data(set1, set2,normalize=True): #set1 is the +1 classified and set2 is the -1 classified
+def load_data(set1, set2,normalize=True,train_size=200): #set1 is the +1 classified and set2 is the -1 classified
 	X_train = []; X_val = []; X_test = []
 	Y_train = []; Y_val = []; Y_test = []
 
 	for digit in set1:
 		temptrain = loadtxt('data/mnist_digit_'+str(digit)+'.csv') #5174 x 784
-		for i in xrange(200): #0-199 is train, 200-349 is val, 350-499 is test
+		for i in xrange(train_size): #0-199 is train, 200-349 is val, 350-499 is test
 			add = np.array(temptrain[i])
 			if normalize: add = 2.0*add/255 - 1 #normalization
 			add = add.tolist()
 			X_train.append(add)
 			Y_train.append(1)
-		for i in xrange(200,350): #0-199 is train, 200-349 is val, 350-499 is test
+		for i in xrange(train_size,train_size+150): #0-199 is train, 200-349 is val, 350-499 is test
 			add = np.array(temptrain[i])
 			if normalize: add = 2.0*add/255 - 1 #normalization
 			add = add.tolist()
 			X_val.append(add)
 			Y_val.append(1)
-		for i in xrange(350,500): #0-199 is train, 200-349 is val, 350-499 is test
+		for i in xrange(train_size+150,train_size+300): #0-199 is train, 200-349 is val, 350-499 is test
 			add = np.array(temptrain[i])
 			if normalize: add = 2.0*add/255 - 1 #normalization
 			add = add.tolist()
@@ -36,19 +36,19 @@ def load_data(set1, set2,normalize=True): #set1 is the +1 classified and set2 is
 			Y_test.append(1)
 	for digit in set2:
 		temptrain = loadtxt('data/mnist_digit_'+str(digit)+'.csv') #5174 x 784
-		for i in xrange(200): #0-199 is train, 200-349 is val, 350-499 is test
+		for i in xrange(train_size): #0-199 is train, 200-349 is val, 350-499 is test
 			add = np.array(temptrain[i])
 			if normalize: add = 2.0*add/255 - 1 #normalization
 			add = add.tolist()
 			X_train.append(add)
 			Y_train.append(-1)
-		for i in xrange(200,350): #0-199 is train, 200-349 is val, 350-499 is test
+		for i in xrange(train_size,train_size+150): #0-199 is train, 200-349 is val, 350-499 is test
 			add = np.array(temptrain[i])
 			if normalize: add = 2.0*add/255 - 1 #normalization
 			add = add.tolist()
 			X_val.append(add)
 			Y_val.append(-1)
-		for i in xrange(350,500): #0-199 is train, 200-349 is val, 350-499 is test
+		for i in xrange(train_size+150,train_size+300): #0-199 is train, 200-349 is val, 350-499 is test
 			add = np.array(temptrain[i])
 			if normalize: add = 2.0*add/255 - 1 #normalization
 			add = add.tolist()
@@ -102,14 +102,15 @@ def validate_svm_lin(X_train, Y_train, X_val,Y_val):
 
 	return incorrect
 
-def validate_svm_gauss(X_train, Y_train, X_val,Y_val,c=1):
+def validate_svm_gauss(X_train, Y_train, X_val,Y_val,c=1,gamma=0.1):
 	"""TO BE FIXED"""
-	print "\n===VALIDATING SVM GAUSS KERNEL==="
-	b,alphas = svm_test.gaussian_get_svm_ws(X_train,np.matrix(Y_train).T,c)
+	print "\n===VALIDATING SVM GAUSS KERNEL gamma="+str(gamma)+" c="+str(c)+"==="
+	b,alphas = svm_test.gaussian_get_svm_ws(X_train,np.matrix(Y_train).T,c,gamma)
 	correct = 0
 	incorrect = []
 	for i in xrange(len(X_val)):
-		x = svm_test.predictSVM_gauss(X_test,Y_test,b,alphas,X_val[0])
+		x = svm_test.predictSVM_gauss(X_test,Y_test,b,alphas,X_val[i])
+		# print i, Y_val[i], x
 		if x > 0: #predicting a +1
 			if Y_val[i] == 1: correct += 1
 			else: incorrect.append(i)
@@ -125,7 +126,7 @@ def validate_svm_gauss(X_train, Y_train, X_val,Y_val,c=1):
 
 def validate_peg_lin(X_train, Y_train, X_val,Y_val,L=2e-5,max_epochs=1000):
 	#get num correct, num incorrect
-	print "\n===VALIDATING PEGASOS LINEAR==="
+	print "\n===VALIDATING PEGASOS LINEAR L="+str(L)+"==="
 	w = pegLin.train_linearSVM(X_train,np.matrix(Y_train).T,L,max_epochs,show=False)
 	correct = 0
 	incorrect = []
@@ -152,14 +153,15 @@ def validate_peg_lin(X_train, Y_train, X_val,Y_val,L=2e-5,max_epochs=1000):
 
 def validate_peg_gauss(X_train, Y_train, X_val,Y_val,gamma=1,L=2e-5,max_epochs=1000):
 	#get num correct, num incorrect
-	print "\n===VALIDATING PEGASOS GAUSS==="
+	print "\n===VALIDATING PEGASOS GAUSS gamma="+str(gamma)+" L="+str(L)+"==="
 	K = pegG.compute_ksums(X_train,gamma)
 	alpha = pegG.train_gaussianSVM(X_train,Y_train,K,L, max_epochs)
 	print "got norm(alpha) as", np.linalg.norm(alpha)
 	correct = 0
 	incorrect = []
 	for i in xrange(len(X_val)):
-		x = pegG.predictSVM_gaussian(alpha,X_train,X_val[30],gamma)
+		x = pegG.predictSVM_gaussian(alpha,X_train,X_val[i],gamma)
+		# print i, Y_val[i], x
 		if x > 0: #predicting a +1
 			if Y_val[i] == 1: correct += 1
 			else: incorrect.append(i)
@@ -177,28 +179,34 @@ if __name__ == '__main__':
 	
 	print '======Training======'
 	# load data from csv files
-	X_train,Y_train,X_val,Y_val,X_test,Y_test = load_data([1],[3],normalize=True)
+	set1 = [1]
+	set2 = [3]
+	normalize = True
+
+	if normalize: print 'comparing', set1, 'with', set2, "normalized"
+	if not normalize: print 'comparing', set1, 'with', set2, "not normalized"
+	X_train,Y_train,X_val,Y_val,X_test,Y_test = load_data(set1,set2,normalize,200)
 
 	# Carry out LR training.
-	# lr_wrong = validate_lr(X_train,Y_train,X_val,Y_val)
+	lr_wrong = validate_lr(X_train,Y_train,X_val,Y_val)
 
 	# Carry out linear SVM Training
-	# svm_lin_wrong = validate_svm_lin(X_train,Y_train,X_val,Y_val)
+	svm_lin_wrong = validate_svm_lin(X_train,Y_train,X_val,Y_val)
 
 	# Carry out Gaussian SVM Training
-	# svm_gauss_wrong = validate_svm_gauss(X_train,Y_train,X_val,Y_val,c=0.001)
+	svm_gauss_wrong = validate_svm_gauss(X_train,Y_train,X_val,Y_val,c=1,gamma=2e-5)
 
 	# Carry out Pegasos Linear Training
-	# pegLin_wrong = validate_peg_lin(X_train, Y_train, X_val,Y_val,L=2e-5,max_epochs=1000)
-	# print pegLin_wrong
+	pegLin_wrong = validate_peg_lin(X_train, Y_train, X_val,Y_val,L=2,max_epochs=1000)
 
 	# Carry out Pegasos Gaussian Training
-	pegG_wrong = validate_peg_gauss(X_train, Y_train, X_val,Y_val,gamma=1,L=2e-5,max_epochs=1000)
+	pegG_wrong = validate_peg_gauss(X_train, Y_train, X_val,Y_val,gamma=0.02,L=0.2,max_epochs=1000)
 	print pegG_wrong
-	# K = pegG.compute_ksums(X_train,gamma=1)
-	# alpha = pegG.train_gaussianSVM(X_train,Y_train,K,l = 0.02, epochs = 1000)
-	# print np.linalg.norm(alpha)
-	# print pegG.predictSVM_gaussian(alpha,X_train,X_val[30],gamma=1)
+
+	# pl.imshow(X_val[174].reshape(28,28), cmap='Greys_r') #visualize number
+	# pl.show()
+	# pl.imshow(X_val[62].reshape(28,28), cmap='Greys_r') #visualize number
+	# pl.show()
 
 
 
@@ -208,6 +216,5 @@ if __name__ == '__main__':
 
 # plotDecisionBoundary(X, Y, predictLR, [0.5], title = 'LR Train')
 
-# pl.imshow(X[600], cmap='Greys_r') #visualize number
 # pl.show()
 

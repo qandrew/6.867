@@ -107,12 +107,12 @@ def linear_get_svm_ws_q4(x, y, c): #for q4 implementation
     # print w.shape
     return np.concatenate((b,w),axis=1)
 
-def gaussian_get_svm_ws(x, y, c):
+def gaussian_get_svm_ws(x, y, c,gamma=0.5):
     n = np.shape(x)[0]
     P = np.zeros((n,n))
     for i in xrange(n):
         for j in xrange(n):
-            P[i,j] = y[i,0]*y[j,0]*np.exp(-1/2*np.sum(np.square(np.subtract(x[i],x[j]))))
+            P[i,j] = y[i,0]*y[j,0]*np.exp(-gamma*np.sum(np.square(np.subtract(x[i],x[j]))))
     P = matrix(P,tc='d')
     q = matrix(np.ones(n)*-1,tc='d')
     G = matrix(np.concatenate((np.eye(n), -1*np.eye(n))),tc='d')
@@ -126,7 +126,7 @@ def gaussian_get_svm_ws(x, y, c):
         if alpha[0] < zero_thresh:
             alpha[0] = 0
     y = np.reshape(y, (-1, 1))
-    x_support = np.where(alphas < c, x, None)
+    x_support = np.where(np.logical_and(alphas > 0, alphas < c), x, None)
     maxa = 1
     s_index = 0
     for i in xrange(x_support.shape[0]):
