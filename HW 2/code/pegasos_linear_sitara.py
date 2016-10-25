@@ -8,7 +8,7 @@ def compute_margin(w):
     ''' Given a weight vector, computes the margin (does not include bias magnitude)'''
     w_calc = w[0][1:]
     return 1./np.linalg.norm(w_calc)
-def train_linearSVM(X, Y, L, max_epochs,show=True):
+def train_linearSVM(X, Y, L, max_epochs):
     '''
     Matrices of the form:
     w = [w0 w1 ... w_d+1]
@@ -38,7 +38,7 @@ def train_linearSVM(X, Y, L, max_epochs,show=True):
     if debug: print 'weight matrix: ',w
     epoch = 0
     while epoch < max_epochs:
-        if epoch%100 == 0 and show: print 'Epoch: ...', epoch, w
+        if epoch%100 == 0: print 'Epoch: ...', epoch, w
         for i in range(n):
             t += 1
             eta = 1.0/(t*L)
@@ -56,6 +56,27 @@ def train_linearSVM(X, Y, L, max_epochs,show=True):
         epoch += 1
 
     return w
+
+name = '1'
+# load data from csv files
+train = loadtxt('data/data'+name+'_train.csv')
+X = train[:,0:2]
+Y = train[:,2:3]
+
+# Carry out training.
+L = 2e-5
+max_epochs = 1000
+
+#X = np.asfarray([[2,2],[2,3],[0,-1],[-3,-2]])
+#Y = np.asfarray([[1],[1],[-1],[-1]])
+
+global w
+w = train_linearSVM(X, Y, L, max_epochs)
+
+print '===WEIGHT VECTORS FOR DATA SET ', name, ' WITH L = ', L, ' ===='
+print w 
+print ''
+
 
 # Define the predict_linearSVM(x) function, which uses global trained parameters, w
 def predict_linearSVM(x):
@@ -90,43 +111,21 @@ def predict_linearSVM(x):
     
     return Y
 
-def predictSVM_linear(w,x): #for question 4
-    x = np.hstack((np.ones((n,1)),x))
-    return np.dot(w,x.T)[0][0]
+margin = compute_margin(w)
+print margin
+# save parameters:
+fname = 'pegasos_linear_data'+str(name)+'_L'+str(L)+'.txt'
+np.savetxt(fname,w, delimiter =' ' )
+f = open(fname, 'a')
+f.write('\n')
+f.write('WEIGHT VECTOR \n')
+f.write('\n')
+f.write(str(margin))
+f.write('\n')
+f.write('MARGIN \n')
+f.close()
 
-if __name__ == "__main__":
-    name = '1'
-    # load data from csv files
-    train = loadtxt('data/data'+name+'_train.csv')
-    X = train[:,0:2]
-    Y = train[:,2:3]
-
-    # Carry out training.
-    L = 2e-5
-    max_epochs = 1000
-
-    global w
-    w = train_linearSVM(X, Y, L, max_epochs)
-
-    print '===WEIGHT VECTORS FOR DATA SET ', name, ' WITH L = ', L, ' ===='
-    print w 
-    print ''
-
-    margin = compute_margin(w)
-    print margin
-    # save parameters:
-    fname = 'pegasos_linear_data'+str(name)+'_L'+str(L)+'.txt'
-    np.savetxt(fname,w, delimiter =' ' )
-    f = open(fname, 'a')
-    f.write('\n')
-    f.write('WEIGHT VECTOR \n')
-    f.write('\n')
-    f.write(str(margin))
-    f.write('\n')
-    f.write('MARGIN \n')
-    f.close()
-
-    # plot training results
-    plotDecisionBoundary(X, Y, predict_linearSVM, [-1,0,1], title = 'Linear SVM on data' + str(name)+' with L = '+str(L))
-    pl.savefig('pegasos_linear_data'+str(name)+'_L'+str(L)+'.png')
-    pl.show()
+# plot training results
+plotDecisionBoundary(X, Y, predict_linearSVM, [-1,0,1], title = 'Linear SVM on data' + str(name)+' with L = '+str(L))
+pl.savefig('pegasos_linear_data'+str(name)+'_L'+str(L)+'.png')
+pl.show()

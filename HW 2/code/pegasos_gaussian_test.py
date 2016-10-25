@@ -8,26 +8,21 @@ def kernel_gaussian(a,b,gamma):
 	return e**(-gamma*power)
 
 ### TODO: Compute the kernel matrix ###
-def compute_ksums(n,gamma):
+def compute_ksums(X,gamma):
+	n = X.shape[0]
 	K = zeros((n,n));
-	K_sums = zeros((n,1)) # sum_j K(x_i, x_j)
+	# K_sums = zeros((n,1)) # sum_j K(x_i, x_j)
 	for i in xrange(n):
 		for j in xrange(n):
 			K[i,j] = kernel_gaussian(X[i],X[j],gamma)
-		K_sums[i] = np.sum(K[i,:])
-	return K, K_sums
-
-def get_comparator(y,alpha,K,i):
-	toret = 0
-	n = len(alpha)
-	for j in xrange(n):
-		toret += alpha[j]*K[j,i]
-	return y*toret
+		# K_sums[i] = np.sum(K[i,:])
+	return K
 
 ### TODO: Implement train_gaussianSVM ###
 def train_gaussianSVM(X,Y,K,l,epochs):
 	t = 0
 	alpha = np.zeros((X.shape[0],1))	
+	n = X.shape[0]
 	for epoch in xrange(epochs):
 		if epoch%100 == 0: print "epoch...", epoch
 		for i in xrange(n):
@@ -47,12 +42,20 @@ def predict_gaussianSVM(x):
 	toret = 0
 	for i in xrange(n):
 		# https://www.quora.com/What-is-the-intuition-behind-Gaussian-kernel-in-SVM
-		toret += alpha[i]*kernel_gaussian(x,X[i],gamma)*Y[i]
-	return toret/500
+		toret += alpha[i]*kernel_gaussian(x,X[i],gamma)
+	return toret
+
+def predictSVM_gaussian(alpha,X,x,gamma): #for question 4
+	toret = 0
+	n = X.shape[0]
+	for i in xrange(n):
+		# https://www.quora.com/What-is-the-intuition-behind-Gaussian-kernel-in-SVM
+		toret += alpha[i]*kernel_gaussian(x,X[i],gamma)
+	return toret
 
 if __name__ == "__main__":
 	# load data from csv files
-	name = '3'
+	name = '1'
 	train = loadtxt('data/data'+name+'_train.csv')
 	Xplot = train[:,0:2]
 	X = np.matrix(train[:,0:2]) #formulate into NP matrix
@@ -62,9 +65,9 @@ if __name__ == "__main__":
 	# Carry out training.
 	epochs = 1000;
 	lmbda = .02; #lambda
-	gamma = 2;
+	gamma = 1;
 
-	K,K_sums = compute_ksums(n,gamma)
+	K = compute_ksums(X,gamma)
 
 	alpha = train_gaussianSVM(X, Y, K, lmbda, epochs);
 	print 'alpha computed' #alpha
