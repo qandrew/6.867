@@ -37,7 +37,7 @@ def gaussian_to_class_func(x,y,b,alphas):
 def error_rate(x, y, w):
     return sum(np.array([np.sign(to_class_func(w)(n)) for n in x]) != y) / float(len(x))
 
-def linear_get_svm_ws(x, y, c): #linear kernel
+def linear_get_svm_ws(x, y, c):
     n = np.shape(x)[0]
     P = np.zeros((n,n))
     k = np.dot(x, x.T) # basically the "kernel matrix"
@@ -66,12 +66,12 @@ def linear_get_svm_ws(x, y, c): #linear kernel
                 b = y[i,0] - x_support[i]*w[0].T
     return [b[0,0],w[0,0],w[0,1]]
 
-def gaussian_get_svm_ws(x, y, c): #gaussian kernel
+def gaussian_get_svm_ws(x, y, c):
     n = np.shape(x)[0]
     P = np.zeros((n,n))
     for i in xrange(n):
         for j in xrange(n):
-            P[i,j] = y[i,0]*y[j,0]*np.exp(-1/2*np.sum(np.square(np.subtract(x[i],x[j])))) #gaussian kernel
+            P[i,j] = y[i,0]*y[j,0]*np.exp(-1/2*np.sum(np.square(np.subtract(x[i],x[j]))))
     P = matrix(P,tc='d')
     q = matrix(np.ones(n)*-1,tc='d')
     G = matrix(np.concatenate((np.eye(n), -1*np.eye(n))),tc='d')
@@ -106,24 +106,16 @@ X = train[:, 0:2].copy()
 Y = train[:, 2:3].copy()
 Xa = np.matrix(train[:, 0:2].copy())
 Ya = np.matrix(train[:, 2:3].copy())
-testData = False
-if testData:
-    X = np.matrix([[2,2],[2,3],[0,-1],[-3,-2]])
-    Y = np.array([[1.0],[1.0],[-1.0],[-1.0]])
-    Xa = np.matrix([[2,2],[2,3],[0,-1],[-3,-2]])
-    Ya = np.array([[1.0],[1.0],[-1.0],[-1.0]])
-
+#
 # # Carry out training, primal and/or dual
+# w = linear_get_svm_ws(Xa, Ya, 1)
+# print w
+b,alphas = gaussian_get_svm_ws(Xa, Ya, 0.01)
+print b
+# print error_rate(X,Y,w)
 # Define the predictSVM(x) function, which uses trained parameters
-linear = True #choose linear or gaussian
-if linear:
-    w = linear_get_svm_ws(Xa, Ya, c=1) #part 2
-    predictSVM = linear_to_class_func(w) #linear
-    # print error_rate(X,Y,w)
-else:
-    b,alphas = gaussian_get_svm_ws(Xa, Ya, c=0.01) #
-    # print 'b', b
-    predictSVM = gaussian_to_class_func(Xa,Ya,b,alphas)
+# predictSVM = linear_to_class_func(w)
+predictSVM = gaussian_to_class_func(Xa,Ya,b,alphas)
 
 # plot training results
 plotDecisionBoundary(X, Y, predictSVM, [-1, 0, 1], title = 'SVM Train')
@@ -134,10 +126,6 @@ print '======Validation======'
 validate = loadtxt('data/data'+name+'_validate.csv')
 X = validate[:, 0:2]
 Y = validate[:, 2:3]
-if testData:
-    X = np.matrix([[2,2],[2,3],[0,-1],[-3,-2]])
-    Y = np.array([[1.0],[1.0],[-1.0],[-1.0]])
-
 # plot validation results
 plotDecisionBoundary(X, Y, predictSVM, [-1, 0, 1], title = 'SVM Validate')
 
