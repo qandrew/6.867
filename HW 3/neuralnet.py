@@ -9,13 +9,21 @@ import pylab as pl
 def regularize(w, loss, lamb):
 	toret = loss(w)
 
-def softmax(layer):
+def softmax(layer, derivative = False):
 	top = np.exp(layer)
 	bottom = np.sum(top)
-	return np.divide(top, bottom)
+	if not derivative:
+		return np.divide(top, bottom)
+	else:
+		return np.divide(top, bottom)*(1-np.divide(top, bottom))
 
-def ReLU(z):
-	return 0.5*(z + np.absolute(z))
+def ReLU(z, derivative = False):
+	relu = 0.5*(z + np.absolute(z))
+	if not derivative: 
+		return relu 
+	else: #for backprop
+		relu[relu>0] = 1
+		return relu
 
 def crossEntropy(y,layer):
 	#this is the loss function
@@ -99,7 +107,25 @@ def forwardProp(x, weights, offsets, debug = True):
 		prev_layer = result_l
 	return aggregated,activated
 
-def backProp(y,weights, offsets,aggregated,activated)
+def backProp(y,weights, offsets,aggregated,activated):
+	d = [0]*len(weights)
+	first = True
+	for i in xrange(len(weights)-1,-1,-1): #decr by 1
+		if first:
+			a_i = activated[i]
+			d[i] = a_i - y.reshape(-1,1) #for the softmax
+			first = False
+		else:
+			W = weights[i+1]
+			err = d[i+1]
+			z_i = aggregated[i]
+			#compute derivative wrt aggregated layer
+			f_prime = ReLu(z_i,derivative=True)
+			diag_f = np.diagflat(f_prime)
+			d_i = np.dot(np.dot(diag_f,W),err)
+			d[i] = d_i
+	return d
+
 
 if __name__ == "__main__":
 	# parameters

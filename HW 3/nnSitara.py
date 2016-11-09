@@ -333,7 +333,55 @@ def one_hot(Y,k):
     one_hot = np.zeros((n, k))
     one_hot[np.arange(n), Y] = 1
     return one_hot
-    
+
+def load_data(set1, set2,normalize=True,train_size=200): #set1 is the +1 classified and set2 is the -1 classified
+    X_train = []; X_val = []; X_test = []
+    Y_train = []; Y_val = []; Y_test = []
+
+    for digit in set1:
+        temptrain = loadtxt('data/mnist_digit_'+str(digit)+'.csv') #5174 x 784
+        for i in xrange(train_size): #0-199 is train, 200-349 is val, 350-499 is test
+            add = np.array(temptrain[i])
+            if normalize: add = 2.0*add/255 - 1 #normalization
+            add = add.tolist()
+            X_train.append(add)
+            Y_train.append(1)
+        for i in xrange(train_size,train_size+150): #0-199 is train, 200-349 is val, 350-499 is test
+            add = np.array(temptrain[i])
+            if normalize: add = 2.0*add/255 - 1 #normalization
+            add = add.tolist()
+            X_val.append(add)
+            Y_val.append(1)
+        for i in xrange(train_size+150,train_size+300): #0-199 is train, 200-349 is val, 350-499 is test
+            add = np.array(temptrain[i])
+            if normalize: add = 2.0*add/255 - 1 #normalization
+            add = add.tolist()
+            X_test.append(add)
+            Y_test.append(1)
+    for digit in set2:
+        temptrain = loadtxt('data/mnist_digit_'+str(digit)+'.csv') #5174 x 784
+        for i in xrange(train_size): #0-199 is train, 200-349 is val, 350-499 is test
+            add = np.array(temptrain[i])
+            if normalize: add = 2.0*add/255 - 1 #normalization
+            add = add.tolist()
+            X_train.append(add)
+            Y_train.append(-1)
+        for i in xrange(train_size,train_size+150): #0-199 is train, 200-349 is val, 350-499 is test
+            add = np.array(temptrain[i])
+            if normalize: add = 2.0*add/255 - 1 #normalization
+            add = add.tolist()
+            X_val.append(add)
+            Y_val.append(-1)
+        for i in xrange(train_size+150,train_size+300): #0-199 is train, 200-349 is val, 350-499 is test
+            add = np.array(temptrain[i])
+            if normalize: add = 2.0*add/255 - 1 #normalization
+            add = add.tolist()
+            X_test.append(add)
+            Y_test.append(-1)
+    # return np.matrix(X),Y
+    return np.matrix(X_train),Y_train, np.matrix(X_val), Y_val, np.matrix(X_test), Y_test
+
+
 #### TEST ON TOY DATASET ####
 test_toy = False
 if test_toy:
@@ -363,7 +411,7 @@ if test_toy:
     pl.show()
     
 #### TEST ON HW2 DATA SETS ####
-hw2_data = True
+hw2_data = False
 if hw2_data:
     # parameters
     name = '2'
@@ -399,5 +447,50 @@ if hw2_data:
         return y[1] - y[0]
 
     # plot validation results
-    plot.plotDecisionBoundary(Xtest, Ytest_values, predictNN, [-1,0,1], title = 'Data set '+name+' using one small hidden layer')
+    plot.plotDecisionBoundary(Xtest, Ytest_values, predictNN, [-1,0,1], title = 'Dataset '+name+', using one small hidden layer')
     pl.show()
+
+### TEST ON HW2 MNIST DATASETS ###
+hw2_dataMNIST = True
+if hw2_dataMNIST:
+    # parameters
+    digits = []
+    print '======Training======'
+    # load data from csv files
+    set1 = [1]
+    set2 = [8]
+    X_train,Y_train,X_val,Y_val,X_test,Y_test = load_data(set1,set2,normalize,200)
+
+    # train = np.loadtxt('data/data'+name+'_train.csv')
+    # Xtrain = train[:, 0:2]
+    # Ytrain_values=train[:, 2:3].astype(int)
+    # Ytrain_values[Ytrain_values < 0] = 0
+    # Ytrain = one_hot(Ytrain_values.reshape(1,-1)[0],2)
+    # val = np.loadtxt('data/data'+name+'_validate.csv')
+    # Xval = val[:, 0:2]
+    # Yval_values = val[:, 2:3].astype(int)
+    # Yval_values[Yval_values < 0] = 0
+    # Yval = one_hot(Yval_values.reshape(1,-1)[0],2)
+    # test = np.loadtxt('data/data'+name+'_test.csv')
+    # Xtest = test[:, 0:2]
+    # Ytest_values = test[:, 2:3].astype(int)
+    # Ytest_values[Ytest_values < 0] = 0
+    # Ytest = one_hot(Ytest_values.reshape(1,-1)[0],2)
+    
+    print Ytrain_values[:10,:]
+    print Ytrain[:10,:]   
+    print 'Training...'
+    weights, offsets , acc, num_iters = NN_train(Xtrain, Ytrain, Xval, Yval, L=3, M=[10,2], k=2)   
+    print 'Finished training in ', num_iters, ' rounds with a validation accuracy of ', acc
+    print 'Performance on test set: ', classify_accuracy(Xtest, Ytest, weights, offsets)
+    print 'Performance on training set: ', classify_accuracy(Xtrain, Ytrain, weights, offsets)
+    def predictNN(x):
+        aggregated, activated = forward_prop(x, weights, offsets)
+        y = activated[-1]
+        # calculate the expected value to predict for smooth plotting
+        return y[1] - y[0]
+
+    # plot validation results
+    plot.plotDecisionBoundary(Xtest, Ytest_values, predictNN, [-1,0,1], title = 'Dataset '+name+', using one small hidden layer')
+    pl.show()
+
